@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.cody.notifyhub" />
+                  <option name="mobileSdkAppId" value="1:550404282668:android:f050f8131ff4a4d837f489" />
+                  <option name="projectId" value="notifyhub-705d0" />
+                  <option name="projectNumber" value="550404282668" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
