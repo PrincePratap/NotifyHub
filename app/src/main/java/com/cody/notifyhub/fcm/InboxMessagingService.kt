@@ -34,8 +34,11 @@ class InboxMessagingService : FirebaseMessagingService() {
             return
         }
 
-        val isNew = runBlocking { repository.save(entity) }
-        if (isNew) notificationHelper.show(entity) else Log.d(TAG, "Duplicate ignored: ${entity.id}")
+        runBlocking {
+            val isNew = repository.save(entity)
+            if (isNew) notificationHelper.show(entity)
+            else Log.d(TAG, "Duplicate ignored: ${entity.id}")
+        }
     }
 
     companion object { private const val TAG = "FCM" }

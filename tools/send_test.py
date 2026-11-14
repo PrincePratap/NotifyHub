@@ -2,15 +2,15 @@ import time, firebase_admin
 from firebase_admin import credentials, messaging
 
 firebase_admin.initialize_app(credentials.Certificate("service-account.json"))
-TOKEN = "ekol-AN8QOiLgtI-jjYdGZ:APA91bEZp6mXtj1nZFBxv1PU-M96y6u6DMoaRcLCFSAMKLNSa3xeZKb_g3olJcTf9-FgskPSxFtbPvoIi0aaXTCJFevkS1xqwuoIMnfAneDHOfaBqEJWVt0"
+TOKEN = "dQx6FA85Q_2cUaWm8_35WS:APA91bH_OMBROBC68AR2mo-THU5J8EXBjSBdqpBcBa26e2PifB7kJN5enAqw58sMR5dIlhMwVsdNS1ZmUcFPO-6odUgLsJEjxArTHfOtzo4Y33qi3HUZFK4"
 
 msg = messaging.Message(
     token=TOKEN,
     data={
-        "id": "notification_107",
-        "title": "New Notification",
-        "description": "This is a sample notification for the assignment.",
-        "bannerImg": "https://i.pinimg.com/1200x/a6/eb/7d/a6eb7d447b58f2e213102692105eba9c.jpg",
+        "id": "notification_105",
+        # "title": "Test Notification",
+        # "description": "This is a sample notification for the assignment.",
+        # "bannerImg": "https://i.pinimg.com/736x/05/67/2c/05672ccbbefc7aa525d3e9432e88f37c.jpg",
         "timestamp": str(int(time.time() * 1000)),
     },
     android=messaging.AndroidConfig(priority="high"),

@@ -22,4 +22,21 @@ interface NotificationDao {
 
     @Query("SELECT COUNT(*) FROM notifications WHERE isRead = 0")
     fun observeUnreadCount(): Flow<Int>
+
+    @Query("UPDATE notifications SET isRead = 1 WHERE isRead = 0")
+    suspend fun markAllAsRead()
+
+    @Query("DELETE FROM notifications WHERE id = :id")
+    suspend fun delete(id: String)
+
+    @Query("DELETE FROM notifications")
+    suspend fun clearAll()
+
+    @Query("""
+    SELECT * FROM notifications
+    WHERE title LIKE '%' || :query || '%'
+       OR description LIKE '%' || :query || '%'
+    ORDER BY timestamp DESC
+""")
+    fun search(query: String): Flow<List<NotificationEntity>>
 }

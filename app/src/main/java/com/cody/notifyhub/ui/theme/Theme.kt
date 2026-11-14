@@ -9,6 +9,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
@@ -33,26 +34,30 @@ private val LightColorScheme = lightColorScheme(
     */
 )
 
+// One fixed light palette: no dark mode, no wallpaper-based dynamic colors
+private val BrandColors = lightColorScheme(
+    primary = Indigo,
+    onPrimary = Color.White,
+    primaryContainer = IndigoLight,
+    onPrimaryContainer = IndigoDark,
+    secondary = Sky,
+    onSecondary = Color.White,
+    secondaryContainer = SkyLight,
+    onSecondaryContainer = SkyDark,
+    background = AppBackground,
+    onBackground = Ink,
+    surface = Color.White,
+    onSurface = Ink,
+    surfaceVariant = Mist,
+    onSurfaceVariant = Slate,
+    outlineVariant = Line
+)
+
 @Composable
-fun NotifyHubTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
-    content: @Composable () -> Unit
-) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
-
+fun NotifyHubTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
+        colorScheme = BrandColors,
+        typography = Typography,   // from Type.kt, unchanged
         content = content
     )
 }

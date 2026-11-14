@@ -15,6 +15,13 @@ import com.cody.notifyhub.data.local.NotificationEntity
 import dagger.hilt.android.qualifiers.ApplicationContext
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import android.graphics.Bitmap
+import coil3.SingletonImageLoader
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
+import coil3.request.allowHardware
+import coil3.toBitmap
+import kotlinx.coroutines.withTimeoutOrNull
 
 @Singleton
 class NotificationHelper @Inject constructor(
@@ -33,10 +40,10 @@ class NotificationHelper @Inject constructor(
         }
     }
 
-    @SuppressLint("MissingPermission")   // we check it on the next line
-    fun show(item: NotificationEntity) {
+    @SuppressLint("MissingPermission")
+    suspend fun show(item: NotificationEntity) {
         val manager = NotificationManagerCompat.from(context)
-        if (!manager.areNotificationsEnabled()) return   // permission denied → still saved, just not shown
+        if (!manager.areNotificationsEnabled()) return
 
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -46,15 +53,38 @@ class NotificationHelper @Inject constructor(
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(item.title)
             .setContentText(item.description)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
-            .setAutoCancel(true)                          // disappears when tapped
-            .build()
+            .setAutoCancel(true)
 
-        manager.notify(item.id.hashCode(), notification)
+        val bitmap = loadBitmap(item.bannerImg)
+        if (bitmap != null) {
+            builder
+                .setLargeIcon(bitmap)                                   // thumbnail when collapsed
+                .setStyle(
+                    NotificationCompat.BigPictureStyle()
+                        .bigPicture(bitmap)                             // full banner when expanded
+                        .bigLargeIcon(null as Bitmap?)                  // hide the thumbnail when expanded
+                )
+        }
+        // bitmap == null (no URL, bad URL, timeout) → text-only notification
+
+        manager.notify(item.id.hashCode(), builder.build())
+    }
+
+    private suspend fun loadBitmap(url: String?): Bitmap? {
+        if (url.isNullOrBlank()) return null
+        return withTimeoutOrNull(5_000) {
+            val request = ImageRequest.Builder(context)
+                .data(url)
+                .allowHardware(false)
+                .build()
+            val result = SingletonImageLoader.get(context).execute(request)
+            (result as? SuccessResult)?.image?.toBitmap()
+        }
     }
 }
