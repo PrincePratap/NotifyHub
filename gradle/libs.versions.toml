@@ -13,6 +13,8 @@ firebaseMessaging = "26.0.2"
 ksp = "2.3.12"
 hilt = "2.60.1"
 coil = "3.3.0"
+runtime = "1.12.1"
+lifecycleRuntimeCompose = "2.11.0"
 
 
 [libraries]
@@ -36,6 +38,8 @@ coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" 
 
 # OkHttp integration for downloading remote images
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
+androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
+androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycleRuntimeCompose" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

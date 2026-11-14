@@ -1,6 +1,7 @@
 package com.cody.notifyhub
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -9,11 +10,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
+import com.cody.notifyhub.ui.navigation.AppNavGraph
 import com.cody.notifyhub.ui.theme.NotifyHubTheme
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
@@ -27,6 +27,10 @@ class MainActivity : ComponentActivity() {
             Log.d("PERMISSION", "Notifications granted: $granted")
         }
 
+    // Increases each time a notification is tapped while the app is already open.
+    // Compose watches it, and AppNavGraph then goes back to the Inbox.
+    private var openInboxSignal by mutableIntStateOf(0)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -36,11 +40,16 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NotifyHubTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Text("NotifyHub", modifier = Modifier.padding(innerPadding))
-                }
+                AppNavGraph(openInboxSignal = openInboxSignal)
             }
         }
+    }
+
+    // Called instead of onCreate when the app is already open and a notification is tapped
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        openInboxSignal++
     }
 
     private fun askNotificationPermission() {
