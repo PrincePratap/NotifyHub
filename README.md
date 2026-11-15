@@ -2,6 +2,7 @@
 
 NotifyHub is my submission for the Firebase Notification Inbox assignment. It's a native Android app that receives push notifications through Firebase Cloud Messaging, shows them in the notification bar, and keeps a local inbox of everything it has received. You can open any notification to see the details, and the app keeps track of what you've already read.
 
+- Repository: https://github.com/PrincePratap/NotifyHub
 - APK: [Download from Google Drive](https://drive.google.com/drive/folders/1joRGijTKGnWj3wFNZbHcHx71tsTX8I8W?usp=sharing)
 - Package name: `com.cody.notifyhub`
 - Notification channel: ID `assignment`, name `Assignment`
@@ -53,43 +54,163 @@ Library versions are in `gradle/libs.versions.toml`.
 
 ## Setup and build
 
-You'll need Android Studio and either a real Android phone or an emulator that has Google Play services (FCM doesn't work on emulators without it).
+### What you need
 
-1. Clone the repo:
-   ```bash
-   git clone TODO add repo URL
+- Android Studio (a recent stable version)
+- A real Android phone, or an emulator with a **Google Play** system image. FCM doesn't work on emulators without Google Play services.
+- A Google account for the Firebase Console
+
+### Step 1: Clone the repo
+
+```bash
+git clone https://github.com/PrincePratap/NotifyHub.git
+```
+
+### Step 2: Get your own `google-services.json`
+
+The app needs a `google-services.json` file to connect to Firebase. It isn't in the repo, so you'll need to create one from your own Firebase project. It takes about five minutes.
+
+1. Go to the [Firebase Console](https://console.firebase.google.com/) and sign in with your Google account.
+2. Click **Create a project** (or **Add project**), give it any name, and click through the steps. You can turn Google Analytics off, since the app doesn't use it.
+3. When the project is ready, you'll land on the project overview page. Click the **Android** icon to add an Android app. If you don't see it, go to ⚙️ **Project settings > General > Your apps > Add app > Android**.
+4. Fill in the form:
+   - **Android package name:** `com.cody.notifyhub`. It has to match exactly, otherwise the build will fail.
+   - **App nickname:** anything you like (optional).
+   - **Debug signing certificate SHA-1:** leave it empty. FCM doesn't need it.
+5. Click **Register app**, then **Download google-services.json**.
+6. Put the file in the **`app/`** folder of the project, next to `app/build.gradle.kts`:
    ```
-2. Set up Firebase. `google-services.json` isn't committed, so you need your own:
-   - Create a project in the [Firebase Console](https://console.firebase.google.com/).
-   - Add an Android app with the package name `com.cody.notifyhub`.
-   - Download `google-services.json` and put it in the `app/` folder.
-3. Open the project in Android Studio, wait for Gradle to sync, and run it.
-4. Allow notifications when the app asks.
+   NotifyHub/
+   ├── app/
+   │   ├── build.gradle.kts
+   │   └── google-services.json   ← here
+   ├── build.gradle.kts
+   └── settings.gradle.kts
+   ```
+   Tip: in Android Studio, switch the left panel from **Android** view to **Project** view to see this folder layout.
+7. Back in the Firebase Console, skip the remaining "Add Firebase SDK" steps. The project already has everything set up. Click **Continue to console**.
+8. Cloud Messaging is on by default. To double-check, go to ⚙️ **Project settings > Cloud Messaging** and make sure **Firebase Cloud Messaging API (V1)** says **Enabled**.
 
-To build an APK, go to Build > Build App Bundle(s) / APK(s) > Build APK(s). The file is saved in `app/build/outputs/apk/debug/`.
+### Step 3: Build and run
+
+1. Open the `NotifyHub` folder in Android Studio and wait for Gradle to sync.
+2. Run the app on your phone or emulator.
+3. Allow notifications when the app asks.
+
+If the sync fails with `File google-services.json is missing`, the file is in the wrong folder. It must be inside `app/`, not in the project root.
+
+### Building the APK
+
+Go to **Build > Build App Bundle(s) / APK(s) > Build APK(s)**. When it finishes, the APK is in `app/build/outputs/apk/debug/app-debug.apk`.
+
+### Testing with my APK instead
+
+The APK on Google Drive is connected to my own Firebase project, so pushes have to come from that project. If you'd like to test with it, send me the email address you want to use and I'll add you to the Firebase project. You can then send test messages from the Firebase Console as described below.
 
 ## Sending test notifications
 
-You'll need your device's FCM token first. In the app, open the menu (⋮) and tap "Copy FCM token". It's also printed in Logcat under the `FCM_TOKEN` tag.
+### Step 1: Get your device's FCM token
 
-### Using the Python script (recommended)
+The token is the "address" of your phone. Firebase needs it to know where to send the notification.
 
-`tools/send_test.py` sends the assignment payload as a data-only message. I used this for most of my testing because data-only messages reach the app whether it's open, in the background or swiped away.
+- In the app, tap the **⋮** menu in the top-right corner and choose **Copy FCM token**. It's now on your phone's clipboard. Send it to yourself (in an email or a chat message, for example) so you can paste it on your computer.
+- Or, if you're running from Android Studio, open **Logcat** and filter by `FCM_TOKEN`.
 
-1. In the Firebase Console, go to Project settings > Service accounts > Generate new private key.
-2. Save the key as `tools/service-account.json`. It's in `.gitignore`, so it won't be committed. Please don't commit it.
-3. Paste your token into `TOKEN` in the script, then run:
+The token changes if you uninstall and reinstall the app, so copy it again after a reinstall.
+
+### Option A: Firebase Console (no setup needed)
+
+1. In the [Firebase Console](https://console.firebase.google.com/), open your project and go to **Messaging** (in the left menu, under **Run** or **Engage**).
+2. Click **Create your first campaign** (or **New campaign**) and choose **Firebase Notification messages**.
+3. Enter a **Notification title** and **Notification text**.
+4. To send the assignment fields, scroll to **Additional options > Custom data** and add these keys and values:
+
+   | Key | Example value |
+      |---|---|
+   | `id` | `notification_101` |
+   | `title` | `New Notification` |
+   | `description` | `This is a sample notification for the assignment.` |
+   | `bannerImg` | `https://picsum.photos/600/300` |
+   | `timestamp` | `1791873000000` |
+
+5. Click **Send test message** (on the right of the first step), paste your FCM token into **Add an FCM registration token**, click **+**, tick the token and click **Test**.
+
+Please read the first item under [Known limitations](#known-limitations) about Console messages: if the app is in the background, tap the notification so the app can save it.
+
+### Option B: Python script (recommended)
+
+`tools/send_test.py` sends the assignment payload as a **data-only** message. I used this for most of my testing, because data-only messages reach the app in every state: open, in the background, or swiped away from recents.
+
+**One-time setup**
+
+1. Install Python 3.11 or newer.
+2. Install the Firebase Admin library:
    ```bash
    pip install firebase-admin
+   ```
+3. In the Firebase Console, go to ⚙️ **Project settings > Service accounts** and click **Generate new private key**. A JSON file downloads.
+4. Rename it to `service-account.json` and move it into the `tools/` folder. The key must come from the **same** Firebase project as your `google-services.json`.
+
+`service-account.json` is a private key. It's in `.gitignore`, so it won't be committed. Please don't share it or commit it.
+
+**Sending a notification**
+
+1. Open `tools/send_test.py` and replace `PASTE_TOKEN_HERE` with your FCM token.
+2. Run it from the `tools` folder:
+   ```bash
    cd tools
    python send_test.py
    ```
+3. If it works, it prints a message ID like `projects/your-project/messages/0:1794...`, and the notification appears on your phone.
 
-Change the `id` in the script each time you want a new notification. Send the same `id` again to check the duplicate handling.
+The script looks like this, in case you want to change the payload:
 
-### Using the Firebase Console
+```python
+import time
+import firebase_admin
+from firebase_admin import credentials, messaging
 
-Go to Messaging, create a new notification, and use "Send test message" with your token. To send the assignment fields, add `id`, `title`, `description`, `bannerImg` and `timestamp` under Additional options > Custom data.
+firebase_admin.initialize_app(credentials.Certificate("service-account.json"))
+TOKEN = "PASTE_TOKEN_HERE"
+
+msg = messaging.Message(
+    token=TOKEN,
+    data={
+        "id": "notification_101",
+        "title": "New Notification",
+        "description": "This is a sample notification for the assignment.",
+        "bannerImg": "https://picsum.photos/600/300",
+        "timestamp": str(int(time.time() * 1000)),
+    },
+    android=messaging.AndroidConfig(priority="high"),
+)
+print(messaging.send(msg))
+```
+
+**If it doesn't work**
+
+| Error | What it means |
+|---|---|
+| `FileNotFoundError: service-account.json` | You're not running the script from the `tools` folder, or the key file has a different name. |
+| `Requested entity was not found` or `UNREGISTERED` | The token is wrong or out of date. Copy it again from the app. |
+| `SenderId mismatch` | The service account key and `google-services.json` come from different Firebase projects. |
+| Script succeeds but nothing appears | Check that notifications are allowed for the app, and that the phone has an internet connection. |
+
+### Things worth trying
+
+Change the `id` in the script (or in the Console's custom data) for each new notification.
+
+| Try this | What should happen |
+|---|---|
+| Send a notification with the app open | It appears in the notification bar and at the top of the inbox |
+| Press Home, then send one | It appears in the notification bar and is in the inbox when you open the app |
+| Swipe the app away from recents, then send one | Same as above (data-only messages) |
+| Tap the system notification | The inbox opens |
+| Open a notification in the inbox | The details screen opens, and the item is marked as read |
+| Send the same `id` twice | Only one entry in the inbox, and no second system notification |
+| Use `https://example.com/banner.jpg` as `bannerImg` | A placeholder is shown, and the text is fine |
+| Leave out `bannerImg`, `description` or `timestamp` | Fallbacks are used (see the table below), with no crash |
+| Close the app completely and reopen it | Everything is still there, with the same read states |
 
 ### Payload
 
